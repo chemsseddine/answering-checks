@@ -40,9 +40,11 @@ export function fetchChecks(): Promise<Check[]> {
 	);
 }
 
+export type CheckResult = 'yes' | 'no';
+
 export interface Result {
 	checkId: string;
-	result: 'yes' | 'no';
+	result: Omit<ExtendedCheck['result'], 'undefined'>;
 }
 
 export function prepareCheckResultsPayload(checks: ExtendedCheck[]): Result[] {

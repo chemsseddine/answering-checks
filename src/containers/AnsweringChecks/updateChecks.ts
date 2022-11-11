@@ -4,11 +4,18 @@ export interface Check {
 	description: string;
 }
 
+export type ExtendedCheckResult = 'yes' | 'no' | undefined;
+
+export enum CheckResultEnum {
+	Yes = 'yes',
+	No = 'no',
+}
+
 export interface ExtendedCheck {
 	checkId: Check['id'];
 	description: Check['description'];
 	priority: Check['priority'];
-	result: undefined | 'yes' | 'no';
+	result: ExtendedCheckResult;
 	enabled: boolean;
 }
 
@@ -46,14 +53,15 @@ export default function updateChecks(
 	draftCheckList.forEach((check, idx) => {
 		if (idx <= currentCheckIndex) return;
 
-		if (userChoice === 'no') {
+		if (userChoice === CheckResultEnum.No) {
 			return (check.enabled = false);
 		}
 
 		const isNextCheckIndex = idx === currentCheckIndex + 1;
 		const previousCheck = draftCheckList[idx - 1];
 		const isPrevCheckAccepted =
-			previousCheck.result === 'yes' && previousCheck.enabled;
+			previousCheck.result === CheckResultEnum.Yes &&
+			previousCheck.enabled;
 
 		if (isNextCheckIndex) {
 			return (check.enabled = true);
@@ -67,7 +75,7 @@ export default function updateChecks(
 
 export function areChecksReadyToBeSubmitted(checks: ExtendedCheck[]) {
 	return (
-		checks.some(ch => ch.result === 'no') ||
-		checks.every(ch => ch.result === 'yes')
+		checks.some(ch => ch.result === CheckResultEnum.No) ||
+		checks.every(ch => ch.result === CheckResultEnum.Yes)
 	);
 }

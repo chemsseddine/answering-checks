@@ -1,12 +1,20 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useReducer } from 'react';
 import { useSubmitCheckResult, useChecksQuery } from '../../api';
 import { Button } from 'semantic-ui-react';
 import styled, { css } from 'styled-components';
 import updateChecks, {
 	ExtendedCheck,
 	areChecksReadyToBeSubmitted,
+	CheckResultEnum,
 } from './updateChecks';
 import useKeyPress from '../../useKeyPress';
+
+enum KeyboardShortcut {
+	Keydown = 'ArrowDown',
+	KeyUp = 'ArrowUp',
+	KeyOne = '1',
+	KeyTwo = '2',
+}
 
 const CheckContainer = styled.div<{ $active: boolean }>`
 	max-width: 400px;
@@ -35,65 +43,76 @@ const Container = styled.div`
 	height: 100vh;
 `;
 
-export default function ChecksForm() {
-	const { isLoading, data, error } = useChecksQuery();
+export default function AnsweringChecksForm() {
+	const { isLoading, data: initialChecks, error } = useChecksQuery();
 	const mutation = useSubmitCheckResult();
 	const [checks, setChecks] = useState<ExtendedCheck[]>([]);
 
 	// handling key presses
-	const downPress = useKeyPress('ArrowDown');
-	const upPress = useKeyPress('ArrowUp');
-	const onePress = useKeyPress('1');
-	const twoPress = useKeyPress('2');
+	const downPress = useKeyPress(KeyboardShortcut.Keydown);
+	const upPress = useKeyPress(KeyboardShortcut.KeyUp);
+	const onePress = useKeyPress(KeyboardShortcut.KeyOne);
+	const twoPress = useKeyPress(KeyboardShortcut.KeyTwo);
 	const [cursor, setCursor] = useState(0);
 	const [hovered, setHovered] = useState<
 		ExtendedCheck['checkId'] | undefined
 	>(undefined);
 
+	const hoveredCheckId = useMemo(() => {
+		if (initialChecks?.length) {
+			return initialChecks[cursor].checkId;
+		}
+	}, [cursor, initialChecks]);
+
+	const updateHoveredCheckWithResponse = useCallback(
+		(response: ExtendedCheck['result']) => {
+			if (hoveredCheckId) {
+				setChecks(prev => updateChecks(prev, hoveredCheckId, response));
+			}
+		},
+		[hoveredCheckId]
+	);
+
 	useEffect(() => {
-		if (checks?.length && downPress) {
-			if (cursor < checks.length - 1 && checks[cursor + 1].enabled) {
-				setCursor(p => (p < checks.length - 1 ? p + 1 : p));
+		if (initialChecks?.length) {
+			if (downPress) {
+				const canCheckBeSelected = cursor < initialChecks.length - 1;
+				const isNextCheckEnabled = checks[cursor + 1].enabled;
+				if (canCheckBeSelected && isNextCheckEnabled) {
+					setCursor(p => (p < checks.length - 1 ? p + 1 : p));
+				}
+			}
+
+			if (upPress) {
+				setCursor(prevState =>
+					prevState > 0 ? prevState - 1 : prevState
+				);
 			}
 		}
-	}, [downPress, checks]);
+	}, [downPress, upPress, checks]);
 
 	useEffect(() => {
-		if (data?.length && twoPress) {
-			const cid = data[cursor].checkId;
-
-			setChecks(prev => updateChecks(prev, cid, 'no'));
+		if (onePress) {
+			updateHoveredCheckWithResponse(CheckResultEnum.Yes);
 		}
-	}, [twoPress, data]);
 
-	useEffect(() => {
-		if (data?.length && onePress) {
-			const cid = data[cursor].checkId;
-
-			setChecks(prev => updateChecks(prev, cid, 'yes'));
+		if (twoPress) {
+			updateHoveredCheckWithResponse(CheckResultEnum.No);
 		}
-	}, [onePress, data]);
+	}, [onePress, twoPress]);
 
 	useEffect(() => {
-		if (data?.length && upPress) {
-			setCursor(prevState => (prevState > 0 ? prevState - 1 : prevState));
-		}
-	}, [upPress, data]);
-
-	useEffect(() => {
-		if (data?.length && hovered) {
+		if (initialChecks?.length && hovered) {
 			setCursor(checks.findIndex(c => c.checkId === hovered));
 		}
-	}, [hovered, data]);
-
-	// finish key presses
+	}, [hovered, initialChecks]);
 
 	// initialize data
 	useEffect(() => {
-		if (data) {
-			setChecks(data);
+		if (initialChecks) {
+			setChecks(initialChecks);
 		}
-	}, [data]);
+	}, [initialChecks]);
 
 	const canSubmit = useMemo(() => {
 		return areChecksReadyToBeSubmitted(checks);
@@ -112,14 +131,16 @@ export default function ChecksForm() {
 		}
 	};
 
-	const submitResult = (event: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmitCheckResults = (
+		event: React.FormEvent<HTMLFormElement>
+	) => {
 		event.preventDefault();
 		mutation.mutate(checks);
 	};
 
 	// rendering
 
-	if (isLoading || !data) return <Container>Loading...</Container>;
+	if (isLoading || !initialChecks) return <Container>Loading...</Container>;
 
 	if (error || mutation.isError) {
 		return <Container>An error has occurred</Container>;
@@ -131,7 +152,7 @@ export default function ChecksForm() {
 
 	return (
 		<Container>
-			<form onSubmit={submitResult}>
+			<form onSubmit={handleSubmitCheckResults}>
 				{checks?.map((check, idx) => (
 					<CheckContainer
 						$active={cursor === idx && check.enabled}
@@ -141,22 +162,28 @@ export default function ChecksForm() {
 						<p>{check.description}</p>
 						<Button.Group>
 							<Button
-								basic={check.result !== 'yes'}
+								basic={check.result !== CheckResultEnum.Yes}
 								color='black'
 								disabled={!check.enabled}
 								type='button'
 								onClick={() =>
-									handleUserChoice(check.checkId, 'yes')
+									handleUserChoice(
+										check.checkId,
+										CheckResultEnum.Yes
+									)
 								}>
 								Yes
 							</Button>
 							<Button
-								basic={check.result !== 'no'}
+								basic={check.result !== CheckResultEnum.No}
 								color='black'
 								disabled={!check.enabled}
 								type='button'
 								onClick={() =>
-									handleUserChoice(check.checkId, 'no')
+									handleUserChoice(
+										check.checkId,
+										CheckResultEnum.No
+									)
 								}>
 								No
 							</Button>
