@@ -37,9 +37,7 @@ const Container = styled.div`
 
 export default function ChecksForm() {
 	const { isLoading, data, error } = useChecksQuery();
-
 	const mutation = useSubmitCheckResult();
-
 	const [checks, setChecks] = useState<ExtendedCheck[]>([]);
 
 	// handling key presses
