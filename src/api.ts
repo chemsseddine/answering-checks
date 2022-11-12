@@ -1,9 +1,9 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
 	ExtendedCheck,
 	Check,
 	sortAndInitializeChecks,
-} from './containers/AnsweringChecks/updateChecks';
+} from './AnsweringChecks/updateChecks';
 
 export function fetchChecks(): Promise<Check[]> {
 	return new Promise((resolve, reject) =>
@@ -79,14 +79,4 @@ export function useChecksQuery() {
 	});
 
 	return query;
-}
-
-export function useSubmitCheckResult() {
-	const mutation = useMutation({
-		mutationFn: (checkResults: ExtendedCheck[]) => {
-			return submitCheckResults(prepareCheckResultsPayload(checkResults));
-		},
-	});
-
-	return mutation;
 }
