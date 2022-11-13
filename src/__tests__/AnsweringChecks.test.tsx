@@ -117,4 +117,45 @@ describe('AnsweringChecks Component', () => {
 
 		expect(submitBtn).not.toBeDisabled();
 	});
+
+	test('Keyboard Press of 1/2 should select yes/no', async () => {
+		render(<AnsweringChecksForm />, { wrapper });
+
+		await userEvent.keyboard('1');
+		const firstCheck = screen.getByTestId('answering-check-0');
+
+		const firstYesBtn = within(firstCheck).getByText(/yes/i);
+		const firstNoBtn = within(firstCheck).getByText(/no/i);
+
+		expect(firstYesBtn).toHaveClass('ui black button');
+		expect(firstNoBtn).toHaveClass('ui basic black button');
+		await userEvent.keyboard('2');
+		expect(firstYesBtn).toHaveClass('ui basic black button');
+		expect(firstNoBtn).toHaveClass('ui black button');
+	});
+
+	test('Keyboard Press of arrow up/down should navigate between checks', async () => {
+		render(<AnsweringChecksForm />, { wrapper });
+
+		const firstCheck = screen.getByTestId('answering-check-0');
+		const secondCheck = screen.getByTestId('answering-check-1');
+
+		const firstYesBtn = within(firstCheck).getByText(/yes/i);
+
+		const secondYesBtn = within(secondCheck).getByText(/yes/i);
+
+		// select yes (first check) ,
+		//  go down => select yes (second check)
+		//  go up => select no (first check)
+		// ==> second check is disabled
+		await userEvent.keyboard('1');
+		await userEvent.keyboard('ArrowDown');
+		expect(firstYesBtn).toHaveClass('ui black button');
+		await userEvent.keyboard('1');
+		expect(secondYesBtn).toHaveClass('ui black button');
+		await userEvent.keyboard('ArrowUp');
+		await userEvent.keyboard('2');
+		expect(firstYesBtn).toHaveClass('ui basic black button');
+		expect(secondYesBtn).toBeDisabled();
+	});
 });
