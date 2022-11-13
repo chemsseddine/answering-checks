@@ -1,4 +1,14 @@
-import { createGlobalStyle } from 'styled-components';
+import { createGlobalStyle, DefaultTheme } from 'styled-components';
+
+export const theme: DefaultTheme = {
+	primary: '#004e5f',
+	highlight: '#def7f7',
+	semantic: {
+		success: 'green',
+		danger: 'red',
+		warning: 'yellow',
+	},
+};
 
 export const GlobalStyle = createGlobalStyle`
 	body,html {
@@ -8,6 +18,7 @@ export const GlobalStyle = createGlobalStyle`
 	#root {
 		width: 100%;
 		height: 100vh;
+		color: ${({ theme: tm }) => tm.primary};
 	}
 	p,
 	h1,

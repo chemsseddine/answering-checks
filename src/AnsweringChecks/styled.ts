@@ -32,7 +32,7 @@ export const FormFooter = styled.div`
 `;
 
 export const ErrorMessage = styled.div`
-	color: red;
+	color: ${({ theme }) => theme.semantic.danger};
 `;
 
 export const Container = styled.div`
@@ -40,6 +40,8 @@ export const Container = styled.div`
 	align-items: center;
 	justify-content: center;
 	height: 100%;
+	min-height: 400px;
+	padding: 10px 20px;
 `;
 
 export const ChecksSubmitSuccess = styled.div`
@@ -55,7 +57,7 @@ export const ChecksSubmitSuccess = styled.div`
 	right: 0;
 	bottom: 0;
 	p {
-		color: green;
+		color: ${({ theme }) => theme.semantic.success};
 		font-size: 16px;
 	}
 `;
