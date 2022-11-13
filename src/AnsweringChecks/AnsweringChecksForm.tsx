@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import {
 	useChecksQuery,
@@ -62,8 +62,12 @@ export default function AnsweringChecksForm() {
 
 	// rendering
 
-	if (isLoading || !initialChecks)
-		return <Styled.Container>Loading...</Styled.Container>;
+	if (isLoading || checks.length === 0)
+		return (
+			<Styled.PlaceholderContainer>
+				<span>Loading ...</span>
+			</Styled.PlaceholderContainer>
+		);
 
 	if (error) {
 		return (
@@ -78,9 +82,7 @@ export default function AnsweringChecksForm() {
 			<>
 				<Styled.ChecksSubmitSuccess>
 					<p>Answers are submitted successfully !</p>
-					<div>
-						<Button onClick={() => reset()}>Go Back </Button>
-					</div>
+					<Button onClick={() => reset()}>Go Back </Button>
 				</Styled.ChecksSubmitSuccess>
 				<Confetti />
 			</>

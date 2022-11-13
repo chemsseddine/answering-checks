@@ -39,8 +39,7 @@ export const Container = styled.div`
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 100vw;
-	height: 100vh;
+	height: 100%;
 `;
 
 export const ChecksSubmitSuccess = styled.div`
@@ -49,8 +48,6 @@ export const ChecksSubmitSuccess = styled.div`
 	gap: 10px;
 	flex-direction: column;
 	justify-content: center;
-	width: 100vw;
-	height: 100vh;
 	z-index: 10;
 	position: absolute;
 	top: 0;
@@ -61,4 +58,11 @@ export const ChecksSubmitSuccess = styled.div`
 		color: green;
 		font-size: 16px;
 	}
+`;
+
+export const PlaceholderContainer = styled.div`
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 `;
