@@ -10,4 +10,5 @@ export default {
 		'!**/node_modules/**',
 	],
 	coverageReporters: ['html', 'text', 'text-summary', 'cobertura'],
+	testEnvironment: 'jsdom',
 };

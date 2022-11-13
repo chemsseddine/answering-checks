@@ -16,7 +16,7 @@ import useAnsweringCheckWithKeyPress from './useAnsweringCheckWithKeyPress';
 import { Confetti } from '../components/Confetti';
 
 export default function AnsweringChecksForm() {
-	const { isLoading, data: initialChecks, error } = useChecksQuery();
+	const { isLoading, data: initialChecks, isError } = useChecksQuery();
 	const [checks, setChecks] = useState<ExtendedCheck[]>([]);
 
 	const {
@@ -69,7 +69,7 @@ export default function AnsweringChecksForm() {
 			</Styled.PlaceholderContainer>
 		);
 
-	if (error) {
+	if (isError) {
 		return (
 			<Styled.Container>
 				<Styled.ErrorMessage>An error has occurred</Styled.ErrorMessage>
@@ -94,6 +94,7 @@ export default function AnsweringChecksForm() {
 			<form onSubmit={handleSubmitCheckResults}>
 				{checks?.map((check, idx) => (
 					<Styled.CheckContainer
+						data-testid={`answering-check-${idx}`}
 						$active={cursor === idx && check.enabled}
 						$enabled={check.enabled}
 						key={check.checkId}

@@ -1,7 +1,7 @@
 import updateChecks, {
 	sortAndInitializeChecks,
 	areChecksReadyToBeSubmitted,
-} from '../containers/AnsweringChecks/updateChecks';
+} from '../AnsweringChecks/updateChecks';
 
 const checks = [
 	{ id: '2', priority: 6, description: 'some desc' },
@@ -76,10 +76,23 @@ describe('updateChecks', () => {
 });
 
 describe('areChecksReadyToBeSubmitted', () => {
-	test('shouchld return checks ready', () => {
+	test('should return false => initial checks are not ready for submission', () => {
 		expect(areChecksReadyToBeSubmitted(data)).toBe(false);
-		const nextChecksState = updateChecks(data, '1', 'yes');
-		expect(areChecksReadyToBeSubmitted(nextChecksState)).toBe(false);
+	});
+
+	test('should return false => checks are not ready to be submitted if not answered as yes', () => {
+		const nextChecksState_1 = updateChecks(data, '1', 'yes');
+		const nextChecksState_2 = updateChecks(nextChecksState_1, '2', 'yes');
+		expect(areChecksReadyToBeSubmitted(nextChecksState_2)).toBe(false);
+	});
+
+	test('should return true => checks are ready to be submitted when all response are anwsered Yes', () => {
+		const nextChecksState_1 = updateChecks(data, '1', 'yes');
+		const nextChecksState_2 = updateChecks(nextChecksState_1, '2', 'yes');
+		const nextChecksState_3 = updateChecks(nextChecksState_2, '3', 'yes');
+		expect(areChecksReadyToBeSubmitted(nextChecksState_3)).toBe(true);
+	});
+	test('should return true => checks are ready to be submitted when at least there is No response', () => {
 		const nextChecksStateWithAnswerNo = updateChecks(data, '1', 'no');
 		expect(areChecksReadyToBeSubmitted(nextChecksStateWithAnswerNo)).toBe(
 			true
